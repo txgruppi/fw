@@ -12,6 +12,10 @@ class FW {
   protected static $scriptUrl;
   protected static $matches = array();
   protected static $vars = array();
+  
+  /**
+   * From F3 Framework
+   */
   protected static $httpStatus = array(
     100 => 'Continue',
     101 => 'Switching Protocols',
