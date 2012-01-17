@@ -2,7 +2,7 @@
 
 class FW {
 
-  const VERSION = '0a';
+  const VERSION = '0-beta';
 
   public static $stop = false;
   public static $viewPath;
