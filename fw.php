@@ -22,7 +22,7 @@
  *
  * Project source code at [GitHub][project-url]
  *
- * @author Tarcísio Gruppi <txgruppi@gmail.com>
+ * @author Tarcísio Gruppi <txgruppi@gmail.com>  
  * @contributor Tadeu Zagallo <tadeuzagallo@gmail.com>
  *
  * [f3-home]: http://bcosca.github.com/fatfree/ target="_blank"
