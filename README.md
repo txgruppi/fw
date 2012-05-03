@@ -2,6 +2,4 @@
 
 FW is a Micro PHP Framework for simple applications.
 
-# How to use
-
-*See sample app*
+[https://github.com/TXGruppi/FW](https://github.com/TXGruppi/FW)
