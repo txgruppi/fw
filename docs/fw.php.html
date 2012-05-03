@@ -31,30 +31,33 @@
               </div>
               <h1 id="fw:phpmicroframework">FW: PHP Micro Framework</h1>
 
-<p>FW is a Micro PHP Framework for simple applications, heavily inspired in <a href="http://bcosca.github.com/fatfree/" target="_blank">PHP Fat-Free Framework</a>.<br/>
-This framework is a URL router and view renderer.</p>
+<p>FW is a Micro PHP Framework for simple applications, heavily inspired by <a href="http://bcosca.github.com/fatfree/" target="_blank">PHP Fat-Free Framework</a>,
+basically a URL router and a view renderer</p>
 
-<p>FW reads the annotation attribute <code><span class="annotation">@route</span></code> and route each url to its action.</p>
+<p>FW reads the annotation attribute <code><span class="annotation">@route</span></code> and routes each url to its action</p>
 
 <p>The route parts are:</p>
 <dl>
 <dt>Method</dt>
 <dd>The HTTP method for the route</dd>
 
-<dd>Can be <code>'*'</code> to run on any route</dd>
+<dd>May be <code>'*'</code> to accept any HTTP method</dd>
 
 <dt>Route</dt>
 <dd>The route regex</dd>
 
-<dd>A pure PHP regex that will be used with <code>preg_match</code></dd>
+<dd>Any PHP valid regex to be used within <code>preg_match</code></dd>
 
-<dd>The matches can be accessed using <code>FW::getMatches()</code></dd>
+<dd>The matches are accessible through the method <code>FW::getMatches()</code></dd>
 </dl>
 
 
 <p>See the <a href="https://github.com/TXGruppi/FW/tree/master/sample">sample app</a> for detailed usage</p>
 
 <p>Project source code at <a href="https://github.com/TXGruppi/FW">GitHub</a></p>
+
+<p><span class="annotation">@author</span> Tarcísio Gruppi <a href="&#x6d;&#x61;&#x69;&#108;&#116;&#111;&#58;&#116;&#x78;&#x67;&#114;&#x75;&#112;&#112;&#x69;&#x40;&#x67;&#x6d;&#97;&#105;&#x6c;&#x2e;&#x63;&#x6f;&#109;">&#x74;&#x78;&#103;&#114;&#x75;&#x70;&#112;&#105;&#x40;&#103;&#x6d;&#x61;&#x69;&#x6c;&#x2e;&#x63;&#111;&#x6d;</a>
+<span class="annotation">@contributor</span> Tadeu Zagallo <a href="&#109;&#x61;&#x69;&#108;&#x74;&#111;&#x3a;&#x74;&#x61;&#100;&#101;&#117;&#122;&#97;&#103;&#97;&#x6c;&#108;&#111;&#x40;&#103;&#x6d;&#x61;&#x69;&#108;&#46;&#x63;&#111;&#x6d;">&#x74;&#x61;&#x64;&#101;&#x75;&#122;&#x61;&#x67;&#x61;&#108;&#x6c;&#x6f;&#x40;&#x67;&#x6d;&#97;&#x69;&#108;&#46;&#x63;&#x6f;&#109;</a></p>
             </td>
             <td class="code">
               <div class="highlight"><pre><span class="cp">&lt;?php</span>

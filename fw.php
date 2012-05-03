@@ -2,25 +2,28 @@
 /**
  * # FW: PHP Micro Framework
  *
- * FW is a Micro PHP Framework for simple applications, heavily inspired in [PHP Fat-Free Framework][f3-home].  
- * This framework is a URL router and view renderer.
+ * FW is a Micro PHP Framework for simple applications, heavily inspired by [PHP Fat-Free Framework][f3-home],
+ * basically a URL router and a view renderer
  *
- * FW reads the annotation attribute `@route` and route each url to its action.
+ * FW reads the annotation attribute `@route` and routes each url to its action
  *
  * The route parts are:
  *
  * Method
  * :   The HTTP method for the route
- * :   Can be `'*'` to run on any route
+ * :   May be `'*'` to accept any HTTP method
  *
  * Route
  * :   The route regex
- * :   A pure PHP regex that will be used with `preg_match`
- * :   The matches can be accessed using `FW::getMatches()`
+ * :   Any PHP valid regex to be used within `preg_match`
+ * :   The matches are accessible through the method `FW::getMatches()`
  *
  * See the [sample app][sample-url] for detailed usage
  *
  * Project source code at [GitHub][project-url]
+ *
+ * @author Tarcísio Gruppi <txgruppi@gmail.com>
+ * @contributor Tadeu Zagallo <tadeuzagallo@gmail.com>
  *
  * [f3-home]: http://bcosca.github.com/fatfree/ target="_blank"
  * [yii-home]: http://www.yiiframework.com/ target="_blank"
