@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>fw.php</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <table cellpadding="0" cellspacing="0">
+      <thead>
+        <tr>
+          <th class="docs">
+            <h1>
+              fw.php
+            </h1>
+          </th>
+          <th class="code">
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr id="section-1">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <h1 id="fw:phpmicroframework">FW: PHP Micro Framework</h1>
+
+<p>FW is a Micro PHP Framework for simple applications, heavily inspired in <a href="http://bcosca.github.com/fatfree/" target="_blank">PHP Fat-Free Framework</a>.<br/>
+This framework is a URL router and view renderer.</p>
+
+<p>FW reads the annotation attribute <code><span class="annotation">@route</span></code> and route each url to its action.</p>
+
+<p>The route parts are:</p>
+<dl>
+<dt>Method</dt>
+<dd>The HTTP method for the route</dd>
+
+<dd>Can be <code>'*'</code> to run on any route</dd>
+
+<dt>Route</dt>
+<dd>The route regex</dd>
+
+<dd>A pure PHP regex that will be used with <code>preg_match</code></dd>
+
+<dd>The matches can be accessed using <code>FW::getMatches()</code></dd>
+</dl>
+
+
+<p>See the <a href="https://github.com/TXGruppi/FW/tree/master/sample">sample app</a> for detailed usage</p>
+
+<p>Project source code at <a href="https://github.com/TXGruppi/FW">GitHub</a></p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre><span class="cp">&lt;?php</span>
+<span class="k">class</span> <span class="nc">FW</span> <span class="p">{</span>
+
+  <span class="k">const</span> <span class="no">VERSION</span> <span class="o">=</span> <span class="s1">&#39;0-beta&#39;</span><span class="p">;</span>
+
+  <span class="k">public</span> <span class="k">static</span> <span class="nv">$stop</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+  <span class="k">public</span> <span class="k">static</span> <span class="nv">$viewPath</span><span class="p">;</span>
+  <span class="k">protected</span> <span class="k">static</span> <span class="nv">$routes</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+  <span class="k">protected</span> <span class="k">static</span> <span class="nv">$baseUrl</span><span class="p">;</span>
+  <span class="k">protected</span> <span class="k">static</span> <span class="nv">$basePath</span><span class="p">;</span>
+  <span class="k">protected</span> <span class="k">static</span> <span class="nv">$scriptUrl</span><span class="p">;</span>
+  <span class="k">protected</span> <span class="k">static</span> <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+  <span class="k">protected</span> <span class="k">static</span> <span class="nv">$vars</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-2">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Copied from F3 Framework<br/>
+<span class="annotation">@see</span> <a href="http://bcosca.github.com/fatfree/" target="_blank">PHP Fat-Free Framework</a></p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">protected</span> <span class="k">static</span> <span class="nv">$httpStatus</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
+    <span class="mi">100</span> <span class="o">=&gt;</span> <span class="s1">&#39;Continue&#39;</span><span class="p">,</span>
+    <span class="mi">101</span> <span class="o">=&gt;</span> <span class="s1">&#39;Switching Protocols&#39;</span><span class="p">,</span>
+    <span class="mi">200</span> <span class="o">=&gt;</span> <span class="s1">&#39;OK&#39;</span><span class="p">,</span>
+    <span class="mi">201</span> <span class="o">=&gt;</span> <span class="s1">&#39;Created&#39;</span><span class="p">,</span>
+    <span class="mi">202</span> <span class="o">=&gt;</span> <span class="s1">&#39;Accepted&#39;</span><span class="p">,</span>
+    <span class="mi">203</span> <span class="o">=&gt;</span> <span class="s1">&#39;Non-Authorative Information&#39;</span><span class="p">,</span>
+    <span class="mi">204</span> <span class="o">=&gt;</span> <span class="s1">&#39;No Content&#39;</span><span class="p">,</span>
+    <span class="mi">205</span> <span class="o">=&gt;</span> <span class="s1">&#39;Reset Content&#39;</span><span class="p">,</span>
+    <span class="mi">206</span> <span class="o">=&gt;</span> <span class="s1">&#39;Partial Content&#39;</span><span class="p">,</span>
+    <span class="mi">300</span> <span class="o">=&gt;</span> <span class="s1">&#39;Multiple Choices&#39;</span><span class="p">,</span>
+    <span class="mi">301</span> <span class="o">=&gt;</span> <span class="s1">&#39;Moved Permanently&#39;</span><span class="p">,</span>
+    <span class="mi">302</span> <span class="o">=&gt;</span> <span class="s1">&#39;Found&#39;</span><span class="p">,</span>
+    <span class="mi">303</span> <span class="o">=&gt;</span> <span class="s1">&#39;See Other&#39;</span><span class="p">,</span>
+    <span class="mi">304</span> <span class="o">=&gt;</span> <span class="s1">&#39;Not Modified&#39;</span><span class="p">,</span>
+    <span class="mi">305</span> <span class="o">=&gt;</span> <span class="s1">&#39;Use Proxy&#39;</span><span class="p">,</span>
+    <span class="mi">307</span> <span class="o">=&gt;</span> <span class="s1">&#39;Temporary Redirect&#39;</span><span class="p">,</span>
+    <span class="mi">400</span> <span class="o">=&gt;</span> <span class="s1">&#39;Bad Request&#39;</span><span class="p">,</span>
+    <span class="mi">401</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unauthorized&#39;</span><span class="p">,</span>
+    <span class="mi">402</span> <span class="o">=&gt;</span> <span class="s1">&#39;Payment Required&#39;</span><span class="p">,</span>
+    <span class="mi">403</span> <span class="o">=&gt;</span> <span class="s1">&#39;Forbidden&#39;</span><span class="p">,</span>
+    <span class="mi">404</span> <span class="o">=&gt;</span> <span class="s1">&#39;Not Found&#39;</span><span class="p">,</span>
+    <span class="mi">405</span> <span class="o">=&gt;</span> <span class="s1">&#39;Method Not Allowed&#39;</span><span class="p">,</span>
+    <span class="mi">406</span> <span class="o">=&gt;</span> <span class="s1">&#39;Not Acceptable&#39;</span><span class="p">,</span>
+    <span class="mi">407</span> <span class="o">=&gt;</span> <span class="s1">&#39;Proxy Authentication Required&#39;</span><span class="p">,</span>
+    <span class="mi">408</span> <span class="o">=&gt;</span> <span class="s1">&#39;Request Timeout&#39;</span><span class="p">,</span>
+    <span class="mi">409</span> <span class="o">=&gt;</span> <span class="s1">&#39;Conflict&#39;</span><span class="p">,</span>
+    <span class="mi">410</span> <span class="o">=&gt;</span> <span class="s1">&#39;Gone&#39;</span><span class="p">,</span>
+    <span class="mi">411</span> <span class="o">=&gt;</span> <span class="s1">&#39;Length Required&#39;</span><span class="p">,</span>
+    <span class="mi">412</span> <span class="o">=&gt;</span> <span class="s1">&#39;Precondition Failed&#39;</span><span class="p">,</span>
+    <span class="mi">413</span> <span class="o">=&gt;</span> <span class="s1">&#39;Request Entity Too Large&#39;</span><span class="p">,</span>
+    <span class="mi">414</span> <span class="o">=&gt;</span> <span class="s1">&#39;Request-URI Too Long&#39;</span><span class="p">,</span>
+    <span class="mi">415</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unsupported Media Type&#39;</span><span class="p">,</span>
+    <span class="mi">416</span> <span class="o">=&gt;</span> <span class="s1">&#39;Requested Range Not Satisfiable&#39;</span><span class="p">,</span>
+    <span class="mi">417</span> <span class="o">=&gt;</span> <span class="s1">&#39;Expectation Failed&#39;</span><span class="p">,</span>
+    <span class="mi">500</span> <span class="o">=&gt;</span> <span class="s1">&#39;Internal Server Error&#39;</span><span class="p">,</span>
+    <span class="mi">501</span> <span class="o">=&gt;</span> <span class="s1">&#39;Not Implemented&#39;</span><span class="p">,</span>
+    <span class="mi">502</span> <span class="o">=&gt;</span> <span class="s1">&#39;Bad Gateway&#39;</span><span class="p">,</span>
+    <span class="mi">503</span> <span class="o">=&gt;</span> <span class="s1">&#39;Service Unavailable&#39;</span><span class="p">,</span>
+    <span class="mi">504</span> <span class="o">=&gt;</span> <span class="s1">&#39;Gateway Timeout&#39;</span><span class="p">,</span>
+    <span class="mi">505</span> <span class="o">=&gt;</span> <span class="s1">&#39;HTTP Version Not Supported&#39;</span><span class="p">,</span>
+  <span class="p">);</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-3">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Run the app<br/>
+Look for the constants:</p>
+<dl>
+<dt>BASE_PATH</dt>
+<dd>The application base path</dd>
+
+<dd>If not set will use the directory of this file</dd>
+
+<dt>VIEW_PATH</dt>
+<dd>The application views path</dd>
+
+<dd>If not set will use the base path + /views</dd>
+</dl>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nb">ob_start</span><span class="p">();</span>
+    <span class="nx">self</span><span class="o">::</span><span class="nv">$baseUrl</span> <span class="o">=</span> <span class="nb">rtrim</span><span class="p">(</span><span class="nb">dirname</span><span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="na">getScriptUrl</span><span class="p">()));</span>
+    <span class="nx">self</span><span class="o">::</span><span class="nv">$basePath</span> <span class="o">=</span> <span class="nb">defined</span><span class="p">(</span><span class="s1">&#39;BASE_PATH&#39;</span><span class="p">)</span> <span class="o">?</span> <span class="nx">BASE_PATH</span> <span class="o">:</span> <span class="nb">dirname</span><span class="p">(</span><span class="k">__FILE__</span><span class="p">);</span>
+    <span class="nx">self</span><span class="o">::</span><span class="nv">$viewPath</span> <span class="o">=</span> <span class="nb">defined</span><span class="p">(</span><span class="s1">&#39;VIEW_PATH&#39;</span><span class="p">)</span> <span class="o">?</span> <span class="nx">VIEW_PATH</span> <span class="o">:</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$basePath</span> <span class="o">.</span> <span class="s1">&#39;/views&#39;</span><span class="p">;</span>
+    <span class="nv">$scriptUrl</span> <span class="o">=</span> <span class="nx">self</span><span class="o">::</span><span class="na">getScriptUrl</span><span class="p">();</span>
+    <span class="nv">$request</span> <span class="o">=</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">])</span> <span class="o">?</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_URI&#39;</span><span class="p">]</span> <span class="o">:</span> <span class="s1">&#39;*&#39;</span><span class="p">;</span>
+    <span class="nv">$method</span> <span class="o">=</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_METHOD&#39;</span><span class="p">])</span> <span class="o">?</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;REQUEST_METHOD&#39;</span><span class="p">]</span> <span class="o">:</span> <span class="s1">&#39;*&#39;</span><span class="p">;</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nb">explode</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="nv">$scriptUrl</span><span class="p">)</span> <span class="k">as</span> <span class="nv">$part</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$part</span><span class="p">))</span>
+        <span class="k">continue</span><span class="p">;</span>
+      <span class="nv">$request</span> <span class="o">=</span> <span class="nb">preg_replace</span><span class="p">(</span><span class="s1">&#39;@^/&#39;</span> <span class="o">.</span> <span class="nv">$part</span> <span class="o">.</span> <span class="s1">&#39;@i&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="nv">$request</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$request</span><span class="p">))</span>
+      <span class="nv">$request</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span><span class="p">;</span>
+    <span class="k">else</span> <span class="p">{</span>
+      <span class="nv">$request</span> <span class="o">=</span> <span class="nb">explode</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="nv">$request</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+      <span class="nv">$request</span> <span class="o">=</span> <span class="nb">array_shift</span><span class="p">(</span><span class="nv">$request</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="nx">self</span><span class="o">::</span><span class="na">callRoute</span><span class="p">(</span><span class="nv">$method</span><span class="p">,</span> <span class="nv">$request</span><span class="p">);</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-4">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Call a specific route</p>
+
+<p><span class="annotation">@param</span> <code>string $method</code> any HTTP method or <code>'*'</code><br/>
+<span class="annotation">@param</span> <code>string $path</code> the route path<br/>
+<span class="annotation">@param</span> <code>bool $callNotFound</code> call 404 if can&#8217;t find route</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">callRoute</span><span class="p">(</span><span class="nv">$method</span><span class="p">,</span> <span class="nv">$path</span><span class="p">,</span> <span class="nv">$callNotFound</span> <span class="o">=</span> <span class="k">true</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$pathArray</span> <span class="o">=</span> <span class="nx">self</span><span class="o">::</span><span class="na">getPathArray</span><span class="p">(</span><span class="nv">$method</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$pathArray</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nv">$method</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
+      <span class="k">return</span> <span class="nv">$callNotFound</span> <span class="o">?</span> <span class="nx">self</span><span class="o">::</span><span class="na">callHttpStatus</span><span class="p">(</span><span class="s1">&#39;404&#39;</span><span class="p">)</span> <span class="o">:</span> <span class="k">null</span><span class="p">;</span>
+    <span class="nv">$callbackArray</span> <span class="o">=</span> <span class="nx">self</span><span class="o">::</span><span class="na">getCallbackArray</span><span class="p">(</span><span class="nv">$pathArray</span><span class="p">,</span> <span class="nv">$path</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$callbackArray</span><span class="p">))</span>
+      <span class="k">return</span> <span class="nv">$callNotFound</span> <span class="o">?</span> <span class="nx">self</span><span class="o">::</span><span class="na">callHttpStatus</span><span class="p">(</span><span class="s1">&#39;404&#39;</span><span class="p">)</span> <span class="o">:</span> <span class="k">null</span><span class="p">;</span>
+    <span class="nx">self</span><span class="o">::</span><span class="na">runCallbackArray</span><span class="p">(</span><span class="nv">$callbackArray</span><span class="p">);</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-5">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Get all paths for a specific method<br/>
+<span class="annotation">@param</span> <code>string $method</code> any HTTP method or <code>'*'</code><br/>
+<span class="annotation">@return</span> <code>array</code> the array of paths</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">getPathArray</span><span class="p">(</span><span class="nv">$method</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$array</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$routes</span><span class="p">[</span><span class="nv">$method</span><span class="p">]))</span>
+      <span class="nv">$array</span> <span class="o">=</span> <span class="nb">array_merge</span><span class="p">(</span><span class="nv">$array</span><span class="p">,</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$routes</span><span class="p">[</span><span class="nv">$method</span><span class="p">]);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$routes</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">]))</span>
+      <span class="nv">$array</span> <span class="o">=</span> <span class="nb">array_merge</span><span class="p">(</span><span class="nv">$array</span><span class="p">,</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$routes</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">]);</span>
+    <span class="k">return</span> <span class="nv">$array</span><span class="p">;</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-6">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Get all valid callbacks for a specific path<br/>
+<span class="annotation">@param</span> <code>array $pathArray</code> array of paths<br/>
+<span class="annotation">@param</span> <code>string $path</code> the path regex to validate or <code>'*'</code> to return all callbacks<br/>
+<span class="annotation">@return</span> <code>array</code> the callback array valid for the specified path</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">getCallbackArray</span><span class="p">(</span><span class="nv">$pathArray</span><span class="p">,</span> <span class="nv">$path</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$catchAll</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$pathArray</span> <span class="k">as</span> <span class="nv">$pattern</span> <span class="o">=&gt;</span> <span class="nv">$callbackArray</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nv">$pattern</span> <span class="o">!=</span> <span class="s1">&#39;*&#39;</span> <span class="o">&amp;&amp;</span> <span class="nb">preg_match</span><span class="p">(</span><span class="s1">&#39;@^&#39;</span> <span class="o">.</span> <span class="nv">$pattern</span> <span class="o">.</span> <span class="s1">&#39;$@i&#39;</span><span class="p">,</span> <span class="nv">$path</span><span class="p">,</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$matches</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nv">$callbackArray</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nv">$pattern</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span> <span class="o">&amp;&amp;</span> <span class="nv">$catchAll</span> <span class="o">===</span> <span class="k">null</span><span class="p">)</span>
+        <span class="nv">$catchAll</span> <span class="o">=</span> <span class="nv">$callbackArray</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nv">$catchAll</span><span class="p">;</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-7">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Call the actions for a HTTP status code<br/>
+<span class="annotation">@param</span> <code>int $status</code> the status code<br/>
+<span class="annotation">@throws</span> <code>Exception</code> if where is no action for the specified status code</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">callHttpStatus</span><span class="p">(</span><span class="nv">$status</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$pathArray</span> <span class="o">=</span> <span class="nx">self</span><span class="o">::</span><span class="na">getPathArray</span><span class="p">(</span><span class="s1">&#39;HTTP_STATUS&#39;</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$pathArray</span><span class="p">))</span> <span class="p">{</span>
+      <span class="nv">$callbackArray</span> <span class="o">=</span> <span class="nx">self</span><span class="o">::</span><span class="na">getCallbackArray</span><span class="p">(</span><span class="nv">$pathArray</span><span class="p">,</span> <span class="nv">$status</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$callbackArray</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="o">::</span><span class="na">runCallbackArray</span><span class="p">(</span><span class="nv">$callbackArray</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="nv">$statusText</span> <span class="o">=</span> <span class="nb">isset</span><span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$httpStatus</span><span class="p">[</span><span class="nv">$status</span><span class="p">])</span> <span class="o">?</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$httpStatus</span><span class="p">[</span><span class="nv">$status</span><span class="p">]</span> <span class="o">:</span> <span class="k">null</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">headers_sent</span><span class="p">())</span>
+      <span class="nb">header</span><span class="p">(</span><span class="s2">&quot;HTTP/1.0 </span><span class="si">$status</span><span class="s2"> </span><span class="si">$statusText</span><span class="s2">&quot;</span><span class="p">);</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nx">Exception</span><span class="p">(</span><span class="s1">&#39;Error &#39;</span> <span class="o">.</span> <span class="nv">$status</span> <span class="o">.</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$statusText</span><span class="p">)</span> <span class="o">?</span> <span class="k">null</span> <span class="o">:</span> <span class="s1">&#39;&lt;br/&gt;&#39;</span> <span class="o">.</span> <span class="nv">$statusText</span><span class="p">));</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-8">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Run all callbacks from a array<br/>
+Stop the callback chain if <code>self::$stop</code> is <code>true</code><br/>
+Call the method <code>beforeAction</code> if it exists<br/>
+<span class="annotation">@param</span> <code>array $callbackArray</code> the callback array</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">runCallbackArray</span><span class="p">(</span><span class="nv">$callbackArray</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$callbackArray</span> <span class="k">as</span> <span class="nv">$callback</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$stop</span><span class="p">)</span>
+        <span class="k">break</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nb">method_exists</span><span class="p">(</span><span class="nv">$callback</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">],</span> <span class="s1">&#39;beforeAction&#39;</span><span class="p">))</span>
+        <span class="nb">call_user_func</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="nv">$callback</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">],</span> <span class="s1">&#39;beforeAction&#39;</span><span class="p">),</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$matches</span><span class="p">,</span> <span class="nv">$callback</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$stop</span><span class="p">)</span>
+        <span class="k">break</span><span class="p">;</span>
+      <span class="nv">$callback</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span><span class="o">-&gt;</span><span class="na">invoke</span><span class="p">(</span><span class="nv">$callback</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">],</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$matches</span><span class="p">,</span> <span class="nv">$callback</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-9">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Copied from Yii Framework<br/>
+<span class="annotation">@see</span> <a href="http://www.yiiframework.com/" target="_blank">Yii Framework</a></p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">getScriptUrl</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$scriptUrl</span> <span class="o">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nv">$scriptName</span><span class="o">=</span><span class="nb">basename</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;SCRIPT_FILENAME&#39;</span><span class="p">]);</span>
+      <span class="k">if</span><span class="p">(</span><span class="nb">basename</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;SCRIPT_NAME&#39;</span><span class="p">])</span><span class="o">===</span><span class="nv">$scriptName</span><span class="p">)</span>
+        <span class="nx">self</span><span class="o">::</span><span class="nv">$scriptUrl</span><span class="o">=</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;SCRIPT_NAME&#39;</span><span class="p">];</span>
+      <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nb">basename</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;PHP_SELF&#39;</span><span class="p">])</span><span class="o">===</span><span class="nv">$scriptName</span><span class="p">)</span>
+        <span class="nx">self</span><span class="o">::</span><span class="nv">$scriptUrl</span><span class="o">=</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;PHP_SELF&#39;</span><span class="p">];</span>
+      <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;ORIG_SCRIPT_NAME&#39;</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="nb">basename</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;ORIG_SCRIPT_NAME&#39;</span><span class="p">])</span><span class="o">===</span><span class="nv">$scriptName</span><span class="p">)</span>
+        <span class="nx">self</span><span class="o">::</span><span class="nv">$scriptUrl</span><span class="o">=</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;ORIG_SCRIPT_NAME&#39;</span><span class="p">];</span>
+      <span class="k">else</span> <span class="k">if</span><span class="p">((</span><span class="nv">$pos</span><span class="o">=</span><span class="nb">strpos</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;PHP_SELF&#39;</span><span class="p">],</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="nv">$scriptName</span><span class="p">))</span><span class="o">!==</span><span class="k">false</span><span class="p">)</span>
+        <span class="nx">self</span><span class="o">::</span><span class="nv">$scriptUrl</span><span class="o">=</span><span class="nb">substr</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;SCRIPT_NAME&#39;</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="nv">$pos</span><span class="p">)</span><span class="o">.</span><span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="nv">$scriptName</span><span class="p">;</span>
+      <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;DOCUMENT_ROOT&#39;</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="nb">strpos</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;SCRIPT_FILENAME&#39;</span><span class="p">],</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;DOCUMENT_ROOT&#39;</span><span class="p">])</span><span class="o">===</span><span class="mi">0</span><span class="p">)</span>
+        <span class="nx">self</span><span class="o">::</span><span class="nv">$scriptUrl</span><span class="o">=</span><span class="nb">str_replace</span><span class="p">(</span><span class="s1">&#39;\\&#39;</span><span class="p">,</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="nb">str_replace</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;DOCUMENT_ROOT&#39;</span><span class="p">],</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;SCRIPT_FILENAME&#39;</span><span class="p">]));</span>
+      <span class="k">else</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nx">Exception</span><span class="p">(</span><span class="s1">&#39;FW is unable to determine the entry script URL.&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$scriptUrl</span><span class="p">;</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-10">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Return the base URL of the app<br/>
+<span class="annotation">@return</span> <code>string</code> the base url</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">baseUrl</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$baseUrl</span><span class="p">;</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-11">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Return the base path of the app<br/>
+<span class="annotation">@return</span> <code>string</code> the base path</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">basePath</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$basePath</span><span class="p">;</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-12">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Get all known routes<br/>
+<span class="annotation">@return</span> <code>array</code> the array of routes</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">getRoutes</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$routes</span><span class="p">;</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-13">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Return all matches for the current route<br/>
+<span class="annotation">@return</span> <code>array</code> the matches array</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">getMatches</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$matches</span><span class="p">;</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-14">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Add a controller object and search each method for a route<br/>
+<span class="annotation">@param</span> <code>object $object</code></p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">add</span><span class="p">(</span><span class="nv">$object</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">is_string</span><span class="p">(</span><span class="nv">$object</span><span class="p">))</span>
+      <span class="nv">$object</span> <span class="o">=</span> <span class="k">new</span> <span class="nv">$object</span><span class="p">;</span>
+    <span class="nv">$reflection</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ReflectionObject</span><span class="p">(</span><span class="nv">$object</span><span class="p">);</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$reflection</span><span class="o">-&gt;</span><span class="na">getMethods</span><span class="p">()</span> <span class="k">as</span> <span class="nv">$method</span><span class="p">)</span>
+      <span class="nx">self</span><span class="o">::</span><span class="na">checkMethod</span><span class="p">(</span><span class="nv">$object</span><span class="p">,</span> <span class="nv">$method</span><span class="p">);</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-15">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Check the method for a route<br/>
+Each method can have more than one route and each route can have more than one method<br/>
+A route is defined by the attribute <code><span class="annotation">@route</span></code> and a regular expression<br/>
+<span class="annotation">@param</span> <code>object $object</code> the controller object<br/>
+<span class="annotation">@param</span> <code>ReflectionMethod $method</code> the method to look</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">function</span> <span class="nf">checkMethod</span><span class="p">(</span><span class="nv">$object</span><span class="p">,</span> <span class="nv">$method</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$comments</span> <span class="o">=</span> <span class="nv">$method</span><span class="o">-&gt;</span><span class="na">getDocComment</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$comments</span><span class="p">))</span>
+      <span class="k">return</span><span class="p">;</span>
+    <span class="nv">$comments</span> <span class="o">=</span> <span class="nb">explode</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nv">$comments</span><span class="p">);</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$comments</span> <span class="k">as</span> <span class="nv">$comment</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nv">$comment</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nv">$comment</span><span class="p">);</span>
+      <span class="nv">$matches</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nb">preg_match</span><span class="p">(</span><span class="s1">&#39;/^\*\s+@route\s+([a-z_]+|\*)\s+(.+)$/i&#39;</span><span class="p">,</span> <span class="nv">$comment</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nv">$httpMethod</span> <span class="o">=</span> <span class="nv">$matches</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+        <span class="nv">$path</span> <span class="o">=</span> <span class="nv">$matches</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+        <span class="nx">self</span><span class="o">::</span><span class="na">addRoute</span><span class="p">(</span><span class="nv">$httpMethod</span><span class="p">,</span> <span class="nv">$path</span><span class="p">,</span> <span class="nv">$object</span><span class="p">,</span> <span class="nv">$method</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-16">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Add a route to the list of routes<br/>
+<span class="annotation">@param</span> <code>string $method</code> the http method or <code>'*'</code> for all methods<br/>
+<span class="annotation">@param</span> <code>string $path</code> the url path or <code>'*'</code> for a catch-all method<br/>
+<span class="annotation">@param</span> <code>object $object</code> the controller object
+<span class="annotation">@param</span> <code>ReflectionFunctionAbstract $reflection</code> the reflection of the action</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">addRoute</span><span class="p">(</span><span class="nv">$method</span><span class="p">,</span> <span class="nv">$path</span><span class="p">,</span> <span class="nv">$object</span><span class="p">,</span> <span class="nx">ReflectionFunctionAbstract</span> <span class="nv">$reflection</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$routes</span><span class="p">[</span><span class="nv">$method</span><span class="p">]))</span>
+      <span class="nx">self</span><span class="o">::</span><span class="nv">$routes</span><span class="p">[</span><span class="nv">$method</span><span class="p">]</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">isset</span><span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$routes</span><span class="p">[</span><span class="nv">$method</span><span class="p">][</span><span class="nv">$path</span><span class="p">]))</span>
+      <span class="nx">self</span><span class="o">::</span><span class="nv">$routes</span><span class="p">[</span><span class="nv">$method</span><span class="p">][</span><span class="nv">$path</span><span class="p">]</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="nx">self</span><span class="o">::</span><span class="nv">$routes</span><span class="p">[</span><span class="nv">$method</span><span class="p">][</span><span class="nv">$path</span><span class="p">][]</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
+      <span class="s1">&#39;method&#39;</span> <span class="o">=&gt;</span> <span class="nv">$reflection</span><span class="p">,</span>
+      <span class="s1">&#39;object&#39;</span> <span class="o">=&gt;</span> <span class="nv">$object</span><span class="p">,</span>
+      <span class="s1">&#39;class&#39;</span> <span class="o">=&gt;</span> <span class="nb">get_class</span><span class="p">(</span><span class="nv">$object</span><span class="p">),</span>
+      <span class="s1">&#39;name&#39;</span> <span class="o">=&gt;</span> <span class="nv">$reflection</span><span class="o">-&gt;</span><span class="na">getName</span><span class="p">(),</span>
+    <span class="p">);</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-17">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Render a view with a layout and pass values to the view<br/>
+The layout will have a variable named <code>$content</code> with the view content
+<span class="annotation">@param</span> <code>string $layout</code> the relative path of the layout file without <code>.php</code> or null to render withour layout<br/>
+<span class="annotation">@param</span> <code>string $view</code> the relative path of the view file without <code>.php</code><br/>
+<span class="annotation">@param</span> <code>array vars</code> a associative array where the keys will be variables in the view<br/>
+<span class="annotation">@return</span> <code>strign</code> the contents of the rendered file<br/>
+<span class="annotation">@throws</span> <code>Exception</code> if cant find the view or layout file</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">render</span><span class="p">(</span><span class="nv">$layout</span><span class="p">,</span> <span class="nv">$view</span><span class="p">,</span> <span class="nv">$vars</span> <span class="o">=</span> <span class="k">array</span><span class="p">())</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">file_exists</span><span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$viewPath</span>  <span class="o">.</span> <span class="s1">&#39;/&#39;</span> <span class="o">.</span> <span class="nv">$view</span> <span class="o">.</span> <span class="s1">&#39;.php&#39;</span><span class="p">))</span> <span class="p">{</span>
+      <span class="nv">$content</span> <span class="o">=</span> <span class="nx">self</span><span class="o">::</span><span class="na">renderFile</span><span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$viewPath</span> <span class="o">.</span> <span class="s1">&#39;/&#39;</span> <span class="o">.</span> <span class="nv">$view</span> <span class="o">.</span> <span class="s1">&#39;.php&#39;</span><span class="p">,</span> <span class="nv">$vars</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$layout</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nv">$content</span><span class="p">;</span>
+      <span class="k">elseif</span> <span class="p">(</span><span class="nb">file_exists</span><span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$viewPath</span> <span class="o">.</span> <span class="s1">&#39;/&#39;</span> <span class="o">.</span> <span class="nv">$layout</span> <span class="o">.</span> <span class="s1">&#39;.php&#39;</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="o">::</span><span class="na">renderFile</span><span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$viewPath</span> <span class="o">.</span> <span class="s1">&#39;/&#39;</span> <span class="o">.</span> <span class="nv">$layout</span> <span class="o">.</span> <span class="s1">&#39;.php&#39;</span><span class="p">,</span> <span class="nb">array_merge</span><span class="p">(</span><span class="nv">$vars</span><span class="p">,</span> <span class="k">array</span><span class="p">(</span><span class="s1">&#39;content&#39;</span> <span class="o">=&gt;</span> <span class="nv">$content</span><span class="p">)));</span>
+      <span class="p">}</span> <span class="k">else</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nx">Exception</span><span class="p">(</span><span class="s2">&quot;Layout &#39;</span><span class="si">$layout</span><span class="s2">&#39; not found in &#39;&quot;</span> <span class="o">.</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$viewPath</span> <span class="o">.</span> <span class="s2">&quot;&#39;.&quot;</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span>
+      <span class="k">throw</span> <span class="k">new</span> <span class="nx">Exception</span><span class="p">(</span><span class="s2">&quot;View &#39;</span><span class="si">$view</span><span class="s2">&#39; not found in &#39;&quot;</span> <span class="o">.</span> <span class="nx">self</span><span class="o">::</span><span class="nv">$viewPath</span> <span class="o">.</span> <span class="s2">&quot;&#39;.&quot;</span><span class="p">);</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-18">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Render a file<br/>
+<span class="annotation">@param</span> <code>string $path</code> the file path<br/>
+<span class="annotation">@param</span> <code>array vars</code> a associative array where the keys will be variables in the view<br/>
+<span class="annotation">@return</span> <code>strign</code> the contents of the rendered file</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">renderFile</span><span class="p">(</span><span class="nv">$path</span><span class="p">,</span> <span class="nv">$vars</span> <span class="o">=</span> <span class="k">array</span><span class="p">())</span> <span class="p">{</span>
+    <span class="nb">ob_start</span><span class="p">();</span>
+    <span class="nb">extract</span><span class="p">(</span><span class="nv">$vars</span><span class="p">);</span>
+    <span class="k">require</span> <span class="nv">$path</span><span class="p">;</span>
+    <span class="nv">$content</span> <span class="o">=</span> <span class="nb">ob_get_contents</span><span class="p">();</span>
+    <span class="nb">ob_end_clean</span><span class="p">();</span>
+    <span class="k">return</span> <span class="nv">$content</span><span class="p">;</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-19">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Get and index of an array or <code>$default</code><br/>
+<span class="annotation">@param</span> <code>array $arr</code> the array<br/>
+<span class="annotation">@param</span> <code>mixed $index</code> the index<br/>
+<span class="annotation">@param</span> <code>mixed $default</code> the default value if the index doesn&#8217;t exists</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">getIndex</span><span class="p">(</span><span class="nv">$arr</span><span class="p">,</span> <span class="nv">$index</span><span class="p">,</span> <span class="nv">$default</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$arr</span><span class="p">[</span><span class="nv">$index</span><span class="p">])</span> <span class="o">?</span> <span class="nv">$arr</span><span class="p">[</span><span class="nv">$index</span><span class="p">]</span> <span class="o">:</span> <span class="nv">$default</span><span class="p">;</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-20">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Get a index from <code>$_REQUEST</code><br/>
+<span class="annotation">@param</span> <code>mixed $name</code> the index<br/>
+<span class="annotation">@param</span> <code>mixed $default</code> the default value if the index doesn&#8217;t exists</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">param</span><span class="p">(</span><span class="nv">$name</span><span class="p">,</span> <span class="nv">$default</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">self</span><span class="o">::</span><span class="na">getIndex</span><span class="p">(</span><span class="nv">$_REQUEST</span><span class="p">,</span> <span class="nv">$name</span><span class="p">,</span> <span class="nv">$default</span><span class="p">);</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-21">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Set a value for the <code>$vars</code> array<br/>
+It can be accessed from any file using the <code>FW</code> class<br/>
+<span class="annotation">@param</span> <code>mixed $name</code> the index for the array<br/>
+<span class="annotation">@param</span> <code>mixed $value</code> the value</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">set</span><span class="p">(</span><span class="nv">$name</span><span class="p">,</span> <span class="nv">$value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">self</span><span class="o">::</span><span class="nv">$vars</span><span class="p">[</span><span class="nv">$name</span><span class="p">]</span> <span class="o">=</span> <span class="nv">$value</span><span class="p">;</span>
+  <span class="p">}</span></pre></div>
+            </td>
+          </tr>
+        
+          <tr id="section-22">
+            <td class="docs">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Get a value from the <code>$vars</code> array or default if the index doesn&#8217;t exists<br/>
+It can be accessed from any file using the <code>FW</code> class<br/>
+<span class="annotation">@param</span> <code>mixed name</code> the index for the array<br/>
+<span class="annotation">@param</span> <code>mixed $default</code> the default value if the index doesn&#8217;t exists</p>
+            </td>
+            <td class="code">
+              <div class="highlight"><pre>  <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">get</span><span class="p">(</span><span class="nv">$name</span><span class="p">,</span> <span class="nv">$default</span> <span class="o">=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">self</span><span class="o">::</span><span class="na">getIndex</span><span class="p">(</span><span class="nx">self</span><span class="o">::</span><span class="nv">$vars</span><span class="p">,</span> <span class="nv">$name</span><span class="p">,</span> <span class="nv">$default</span><span class="p">);</span>
+  <span class="p">}</span>
+
+<span class="p">}</span>
+
+</pre></div>
+            </td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

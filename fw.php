@@ -1,5 +1,32 @@
 <?php
-
+/**
+ * # FW: PHP Micro Framework
+ *
+ * FW is a Micro PHP Framework for simple applications, heavily inspired in [PHP Fat-Free Framework][f3-home].  
+ * This framework is a URL router and view renderer.
+ *
+ * FW reads the annotation attribute `@route` and route each url to its action.
+ *
+ * The route parts are:
+ *
+ * Method
+ * :   The HTTP method for the route
+ * :   Can be `'*'` to run on any route
+ *
+ * Route
+ * :   The route regex
+ * :   A pure PHP regex that will be used with `preg_match`
+ * :   The matches can be accessed using `FW::getMatches()`
+ *
+ * See the [sample app][sample-url] for detailed usage
+ *
+ * Project source code at [GitHub][project-url]
+ *
+ * [f3-home]: http://bcosca.github.com/fatfree/ target="_blank"
+ * [yii-home]: http://www.yiiframework.com/ target="_blank"
+ * [sample-url]: https://github.com/TXGruppi/FW/tree/master/sample
+ * [project-url]: https://github.com/TXGruppi/FW
+ */
 class FW {
 
   const VERSION = '0-beta';
@@ -12,9 +39,10 @@ class FW {
   protected static $scriptUrl;
   protected static $matches = array();
   protected static $vars = array();
-  
+
   /**
-   * From F3 Framework
+   * Copied from F3 Framework  
+   * @see [PHP Fat-Free Framework][f3-home]
    */
   protected static $httpStatus = array(
     100 => 'Continue',
@@ -59,6 +87,18 @@ class FW {
     505 => 'HTTP Version Not Supported',
   );
 
+  /**
+   * Run the app  
+   * Look for the constants:
+   *
+   * BASE_PATH
+   * :   The application base path
+   * :   If not set will use the directory of this file
+   *
+   * VIEW_PATH
+   * :   The application views path
+   * :   If not set will use the base path + /views
+   */
   public static function run() {
     ob_start();
     self::$baseUrl = rtrim(dirname(self::getScriptUrl()));
@@ -81,6 +121,13 @@ class FW {
     self::callRoute($method, $request);
   }
 
+  /**
+   * Call a specific route
+   *
+   * @param `string $method` any HTTP method or `'*'`  
+   * @param `string $path` the route path  
+   * @param `bool $callNotFound` call 404 if can't find route
+   */
   public static function callRoute($method, $path, $callNotFound = true) {
     $pathArray = self::getPathArray($method);
     if (empty($pathArray) && $method == '*')
@@ -91,6 +138,11 @@ class FW {
     self::runCallbackArray($callbackArray);
   }
 
+  /**
+   * Get all paths for a specific method  
+   * @param `string $method` any HTTP method or `'*'`  
+   * @return `array` the array of paths
+   */
   public static function getPathArray($method) {
     $array = array();
     if (isset(self::$routes[$method]))
@@ -100,6 +152,12 @@ class FW {
     return $array;
   }
 
+  /**
+   * Get all valid callbacks for a specific path  
+   * @param `array $pathArray` array of paths  
+   * @param `string $path` the path regex to validate or `'*'` to return all callbacks  
+   * @return `array` the callback array valid for the specified path
+   */
   public static function getCallbackArray($pathArray, $path) {
     $catchAll = null;
     foreach ($pathArray as $pattern => $callbackArray) {
@@ -111,6 +169,11 @@ class FW {
     return $catchAll;
   }
 
+  /**
+   * Call the actions for a HTTP status code  
+   * @param `int $status` the status code  
+   * @throws `Exception` if where is no action for the specified status code
+   */
   public static function callHttpStatus($status) {
     $pathArray = self::getPathArray('HTTP_STATUS');
     if (!empty($pathArray)) {
@@ -125,6 +188,12 @@ class FW {
     throw new Exception('Error ' . $status . (empty($statusText) ? null : '<br/>' . $statusText));
   }
 
+  /**
+   * Run all callbacks from a array  
+   * Stop the callback chain if `self::$stop` is `true`  
+   * Call the method `beforeAction` if it exists  
+   * @param `array $callbackArray` the callback array
+   */
   public static function runCallbackArray($callbackArray) {
     foreach ($callbackArray as $callback) {
       if (self::$stop)
@@ -138,7 +207,8 @@ class FW {
   }
 
   /**
-   * From Yii Framework
+   * Copied from Yii Framework  
+   * @see [Yii Framework][yii-home]
    */
   public static function getScriptUrl() {
     if (self::$scriptUrl == null) {
@@ -159,22 +229,42 @@ class FW {
     return self::$scriptUrl;
   }
 
+  /**
+   * Return the base URL of the app  
+   * @return `string` the base url
+   */
   public static function baseUrl() {
     return self::$baseUrl;
   }
 
+  /**
+   * Return the base path of the app  
+   * @return `string` the base path
+   */
   public static function basePath() {
     return self::$basePath;
   }
 
+  /**
+   * Get all known routes  
+   * @return `array` the array of routes
+   */
   public static function getRoutes() {
     return self::$routes;
   }
 
+  /**
+   * Return all matches for the current route  
+   * @return `array` the matches array
+   */
   public static function getMatches() {
     return self::$matches;
   }
 
+  /**
+   * Add a controller object and search each method for a route  
+   * @param `object $object`
+   */
   public static function add($object) {
     if (is_string($object))
       $object = new $object;
@@ -183,6 +273,13 @@ class FW {
       self::checkMethod($object, $method);
   }
 
+  /**
+   * Check the method for a route  
+   * Each method can have more than one route and each route can have more than one method  
+   * A route is defined by the attribute `@route` and a regular expression  
+   * @param `object $object` the controller object  
+   * @param `ReflectionMethod $method` the method to look
+   */
   public function checkMethod($object, $method) {
     $comments = $method->getDocComment();
     if (empty($comments))
@@ -199,6 +296,13 @@ class FW {
     }
   }
 
+  /**
+   * Add a route to the list of routes  
+   * @param `string $method` the http method or `'*'` for all methods  
+   * @param `string $path` the url path or `'*'` for a catch-all method  
+   * @param `object $object` the controller object
+   * @param `ReflectionFunctionAbstract $reflection` the reflection of the action
+   */
   public static function addRoute($method, $path, $object, ReflectionFunctionAbstract $reflection) {
     if (!isset(self::$routes[$method]))
       self::$routes[$method] = array();
@@ -212,19 +316,34 @@ class FW {
     );
   }
 
+  /**
+   * Render a view with a layout and pass values to the view  
+   * The layout will have a variable named `$content` with the view content
+   * @param `string $layout` the relative path of the layout file without `.php` or null to render withour layout  
+   * @param `string $view` the relative path of the view file without `.php`  
+   * @param `array vars` a associative array where the keys will be variables in the view  
+   * @return `strign` the contents of the rendered file  
+   * @throws `Exception` if cant find the view or layout file
+   */
   public static function render($layout, $view, $vars = array()) {
     if (file_exists(self::$viewPath  . '/' . $view . '.php')) {
       $content = self::renderFile(self::$viewPath . '/' . $view . '.php', $vars);
       if (empty($layout))
         return $content;
       elseif (file_exists(self::$viewPath . '/' . $layout . '.php')) {
-        return self::renderFile(self::$viewPath . '/' . $layout . '.php', array('content' => $content));
+        return self::renderFile(self::$viewPath . '/' . $layout . '.php', array_merge($vars, array('content' => $content)));
       } else
         throw new Exception("Layout '$layout' not found in '" . self::$viewPath . "'.");
     } else
       throw new Exception("View '$view' not found in '" . self::$viewPath . "'.");
   }
 
+  /**
+   * Render a file  
+   * @param `string $path` the file path  
+   * @param `array vars` a associative array where the keys will be variables in the view  
+   * @return `strign` the contents of the rendered file
+   */
   public static function renderFile($path, $vars = array()) {
     ob_start();
     extract($vars);
@@ -233,19 +352,42 @@ class FW {
     ob_end_clean();
     return $content;
   }
-  
+
+  /**
+   * Get and index of an array or `$default`  
+   * @param `array $arr` the array  
+   * @param `mixed $index` the index  
+   * @param `mixed $default` the default value if the index doesn't exists
+   */
   public static function getIndex($arr, $index, $default = null) {
     return isset($arr[$index]) ? $arr[$index] : $default;
   }
 
+  /**
+   * Get a index from `$_REQUEST`  
+   * @param `mixed $name` the index  
+   * @param `mixed $default` the default value if the index doesn't exists
+   */
   public static function param($name, $default = null) {
     return self::getIndex($_REQUEST, $name, $default);
   }
-  
+
+  /**
+   * Set a value for the `$vars` array  
+   * It can be accessed from any file using the `FW` class  
+   * @param `mixed $name` the index for the array  
+   * @param `mixed $value` the value
+   */
   public static function set($name, $value) {
     self::$vars[$name] = $value;
   }
-  
+
+  /**
+   * Get a value from the `$vars` array or default if the index doesn't exists  
+   * It can be accessed from any file using the `FW` class  
+   * @param `mixed name` the index for the array  
+   * @param `mixed $default` the default value if the index doesn't exists
+   */
   public static function get($name, $default = null) {
     return self::getIndex(self::$vars, $name, $default);
   }
