@@ -389,7 +389,8 @@ class FW {
   public static function setFlash($key, $data) {
     if (!headers_sent()) {
       $started = true;
-      if (!session_id()) {
+      $session_id = session_id();
+      if (empty($session_id)) {
         $started = session_start();
       }
 
@@ -413,7 +414,8 @@ class FW {
   // @param `mixed $key` any valid value for an array key
   // @return `array|null` return an array with the flash data or null if $key is not set
   public static function getFlash($key) {
-    if (!headers_sent() || !session_id())
+    $session_id = session_id();
+    if (!headers_sent() && empty($session_id))
       session_start();
 
     if (isset($_SESSION['FW_FLASH']) && isset($_SESSION['FW_FLASH'][$key])) {
