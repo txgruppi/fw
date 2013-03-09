@@ -31,7 +31,7 @@
 // [project-url]: https://github.com/TXGruppi/fw
 class FW {
 
-  const VERSION = '0.4.0';
+  const VERSION = '0.5.0';
 
   public static $stop = false;
   public static $viewPath;
@@ -101,8 +101,11 @@ class FW {
   public static function run() {
     ob_start();
     self::$baseUrl = rtrim(dirname(self::getScriptUrl()));
+    self::$baseUrl = preg_replace('/\/$/', '', self::$baseUrl);
+
     self::$basePath = defined('BASE_PATH') ? BASE_PATH : dirname(__FILE__);
     self::$viewPath = defined('VIEW_PATH') ? VIEW_PATH : self::$basePath . '/views';
+
     $scriptUrl = self::getScriptUrl();
     $request = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '*';
     $method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '*';
