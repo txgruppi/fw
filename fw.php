@@ -31,7 +31,7 @@
 // [project-url]: https://github.com/TXGruppi/fw
 class FW {
 
-  const VERSION = '0.5.0';
+  const VERSION = '0.6.0';
 
   public static $stop = false;
   public static $viewPath;
@@ -386,19 +386,24 @@ class FW {
     return self::getIndex(self::$vars, $name, $default);
   }
 
+  public static function sessionStart() {
+    if (!headers_sent()) {
+      $session_id = session_id();
+      if (empty($session_id))
+        session_start();
+      $session_id = session_id();
+      return !empty($session_id);
+    }
+    return false;
+  }
+
   // Set a flash value
   // Push $data to a array with $key as index
   // @param `mixed $key` any valid value for an array key
   // @param `mixed $data` any serializable value to be stored
   // @return `boolean` true if the data was set, false otherwise
   public static function setFlash($key, $data) {
-    if (!headers_sent()) {
-      $started = true;
-      $session_id = session_id();
-      if (empty($session_id)) {
-        $started = session_start();
-      }
-
+    if (FW::sessionStart()) {
       if ($started) {
         if (!isset($_SESSION['FW_FLASH']))
           $_SESSION['FW_FLASH'] = array();
@@ -419,9 +424,7 @@ class FW {
   // @param `mixed $key` any valid value for an array key
   // @return `array` return an array with the flash data or an empty array if $key is not set
   public static function getFlash($key) {
-    $session_id = session_id();
-    if (!headers_sent() && empty($session_id))
-      session_start();
+    FW::sessionStart();
 
     if (isset($_SESSION['FW_FLASH']) && isset($_SESSION['FW_FLASH'][$key])) {
       $data = $_SESSION['FW_FLASH'][$key];
