@@ -434,10 +434,11 @@ class FW {
   // Refresh the client's browser
   // Send a Location header with the url from current request
   // @param `string $anchor` append a value to the refresh URL
+  // @param `integer $statusCode` HTTP status code
   // @return `boolean` true if refresh is set, false otherwise
-  public static function refresh($anchor = '') {
+  public static function refresh($anchor = '', $statusCode = 302) {
     if (!headers_sent()) {
-      header('Location: ' . self::getRequestUri() . $anchor);
+      header('Location: ' . self::getRequestUri() . $anchor, true, $statusCode);
       return true;
     }
     return false;
