@@ -31,7 +31,7 @@
 // [project-url]: https://github.com/TXGruppi/fw
 class FW {
 
-  const VERSION = '0.3.0';
+  const VERSION = '0.4.0';
 
   public static $stop = false;
   public static $viewPath;
@@ -192,6 +192,8 @@ class FW {
       if (self::$stop)
         break;
       $callback['method']->invoke($callback['object'], self::$matches, $callback);
+      if (method_exists($callback['object'], 'afterAction'))
+        call_user_func(array($callback['object'], 'afterAction'), self::$matches, $callback);
     }
   }
 
@@ -412,7 +414,7 @@ class FW {
   // Get a flash value
   // Get all values stored for a key in the flash array
   // @param `mixed $key` any valid value for an array key
-  // @return `array|null` return an array with the flash data or null if $key is not set
+  // @return `array` return an array with the flash data or an empty array if $key is not set
   public static function getFlash($key) {
     $session_id = session_id();
     if (!headers_sent() && empty($session_id))
@@ -428,7 +430,7 @@ class FW {
       return $data;
     }
 
-    return null;
+    return array();
   }
 
   // Refresh the client's browser
