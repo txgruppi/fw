@@ -31,7 +31,7 @@
 // [project-url]: https://github.com/TXGruppi/fw
 class FW {
 
-  const VERSION = '0-beta';
+  const VERSION = '0.2.0';
 
   public static $stop = false;
   public static $viewPath;
@@ -39,6 +39,7 @@ class FW {
   protected static $baseUrl;
   protected static $basePath;
   protected static $scriptUrl;
+  protected static $requestUri;
   protected static $matches = array();
   protected static $vars = array();
 
@@ -192,6 +193,33 @@ class FW {
         break;
       $callback['method']->invoke($callback['object'], self::$matches, $callback);
     }
+  }
+
+  // Copied from Yii Framework
+  // @see [Yii Framework][yii-home]
+  public static function getRequestUri() {
+    if(self::$requestUri === null) {
+      if(isset($_SERVER['HTTP_X_REWRITE_URL'])) {
+        self::$requestUri = $_SERVER['HTTP_X_REWRITE_URL'];
+      } elseif (isset($_SERVER['REQUEST_URI'])) {
+        self::$requestUri = $_SERVER['REQUEST_URI'];
+        if(!empty($_SERVER['HTTP_HOST'])) {
+          if(strpos(self::$requestUri,$_SERVER['HTTP_HOST']) !== false)
+            self::$requestUri = preg_replace('/^\w+:\/\/[^\/]+/','',self::$requestUri);
+        } else {
+          self::$requestUri = preg_replace('/^(http|https):\/\/[^\/]+/i','',self::$requestUri);
+        }
+      } elseif (isset($_SERVER['ORIG_PATH_INFO'])) {
+        self::$requestUri = $_SERVER['ORIG_PATH_INFO'];
+        if(!empty($_SERVER['QUERY_STRING'])) {
+          self::$requestUri .= '?'.$_SERVER['QUERY_STRING'];
+        }
+      } else {
+        throw new Exception('FW is unable to determine the request URI.');
+      }
+    }
+
+    return self::$requestUri;
   }
 
   // Copied from Yii Framework
@@ -399,6 +427,18 @@ class FW {
     }
 
     return null;
+  }
+
+  // Refresh the client's browser
+  // Send a Location header with the url from current request
+  // @param `string $anchor` append a value to the refresh URL
+  // @return `boolean` true if refresh is set, false otherwise
+  public static function refresh($anchor = '') {
+    if (!headers_sent()) {
+      header('Location: ' . self::getRequestUri() . $anchor);
+      return true;
+    }
+    return false;
   }
 
 }
