@@ -245,8 +245,9 @@ class FW {
     if (is_string($object))
       $object = new $object;
     $reflection = new ReflectionObject($object);
-    foreach ($reflection->getMethods() as $method)
+    foreach ($reflection->getMethods() as $method) {
       self::checkMethod($object, $method);
+    }
   }
 
   // Check the method for a route
@@ -254,7 +255,7 @@ class FW {
   // A route is defined by the attribute `@route` and a regular expression
   // @param `object $object` the controller object
   // @param `ReflectionMethod $method` the method to look
-  public function checkMethod($object, $method) {
+  public static function checkMethod($object, $method) {
     $comments = $method->getDocComment();
     if (empty($comments))
       return;
@@ -350,6 +351,54 @@ class FW {
   // @param `mixed $default` the default value if the index doesn't exists
   public static function get($name, $default = null) {
     return self::getIndex(self::$vars, $name, $default);
+  }
+
+  // Set a flash value
+  // Push $data to a array with $key as index
+  // @param `mixed $key` any valid value for an array key
+  // @param `mixed $data` any serializable value to be stored
+  // @return `boolean` true if the data was set, false otherwise
+  public static function setFlash($key, $data) {
+    if (!headers_sent()) {
+      $started = true;
+      if (!session_id()) {
+        $started = session_start();
+      }
+
+      if ($started) {
+        if (!isset($_SESSION['FW_FLASH']))
+          $_SESSION['FW_FLASH'] = array();
+
+        if (!isset($_SESSION['FW_FLASH'][$key]))
+          $_SESSION['FW_FLASH'][$key] = array();
+
+        $_SESSION['FW_FLASH'][$key][] = $data;
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // Get a flash value
+  // Get all values stored for a key in the flash array
+  // @param `mixed $key` any valid value for an array key
+  // @return `array|null` return an array with the flash data or null if $key is not set
+  public static function getFlash($key) {
+    if (!headers_sent() || !session_id())
+      session_start();
+
+    if (isset($_SESSION['FW_FLASH']) && isset($_SESSION['FW_FLASH'][$key])) {
+      $data = $_SESSION['FW_FLASH'][$key];
+      if (count($_SESSION['FW_FLASH']) == 1) {
+        unset($_SESSION['FW_FLASH']);
+      } else {
+        unset($_SESSION['FW_FLASH'][$key]);
+      }
+      return $data;
+    }
+
+    return null;
   }
 
 }

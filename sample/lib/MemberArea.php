@@ -1,9 +1,9 @@
 <?php
 
 class MemberArea {
-  
+
   protected $auth = null;
-  
+
   public function beforeAction($matches, $callback) {
     if ($callback['name'] == 'login')
       return;
@@ -14,7 +14,7 @@ class MemberArea {
     if (!$this->auth) {
       header('Location: ' . FW::baseUrl() . '/index.php/member/signin');
       FW::$stop = true;
-      return; 
+      return;
     }
   }
 
@@ -32,7 +32,7 @@ class MemberArea {
   public function login($matches, $callback) {
     $login = FW::param('login');
     $password = FW::param('password');
-    
+
     if (isset($_POST['login']) && isset($_POST['password'])) {
       if ($login == 'sample' && $password == 'sample') {
         session_start();
@@ -43,7 +43,7 @@ class MemberArea {
       FW::$stop = true;
       return;
     }
-    
+
     $error = isset($matches[1]);
 
     echo FW::render('layouts/member', 'member/signin', array(
