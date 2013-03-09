@@ -31,7 +31,7 @@
 // [project-url]: https://github.com/TXGruppi/fw
 class FW {
 
-  const VERSION = '0.2.0';
+  const VERSION = '0.3.0';
 
   public static $stop = false;
   public static $viewPath;
@@ -433,12 +433,21 @@ class FW {
 
   // Refresh the client's browser
   // Send a Location header with the url from current request
-  // @param `string $anchor` append a value to the refresh URL
+  // @param `string $anchor` value to append to the refresh URL
   // @param `integer $statusCode` HTTP status code
   // @return `boolean` true if refresh is set, false otherwise
   public static function refresh($anchor = '', $statusCode = 302) {
+    return FW::redirect(self::getRequestUri() . $anchor, $statusCode);
+  }
+
+  // Refresh the client's browser
+  // Send a Location header with a url
+  // @param `string $url` URL to redirect
+  // @param `integer $statusCode` HTTP status code
+  // @return `boolean` true if redirect is set, false otherwise
+  public static function redirect($url, $statusCode = 302) {
     if (!headers_sent()) {
-      header('Location: ' . self::getRequestUri() . $anchor, true, $statusCode);
+      header('Location: ' . $url, true, $statusCode);
       return true;
     }
     return false;
