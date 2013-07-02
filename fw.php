@@ -141,11 +141,11 @@ class FW {
   // Get all paths for a specific method
   // @param `string $method` any HTTP method or `'*'`
   // @return `array` the array of paths
-  public static function getPathArray($method) {
+  public static function getPathArray($method, $includeStar = true) {
     $array = array();
     if (isset(self::$routes[$method]))
       $array = array_merge($array, self::$routes[$method]);
-    if (isset(self::$routes['*']))
+    if ($includeStar && isset(self::$routes['*']))
       $array = array_merge($array, self::$routes['*']);
     return $array;
   }
