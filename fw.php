@@ -169,7 +169,7 @@ class FW {
   // @param `int $status` the status code
   // @throws `Exception` if where is no action for the specified status code
   public static function callHttpStatus($status) {
-    $pathArray = self::getPathArray('HTTP_STATUS');
+    $pathArray = self::getPathArray('HTTP_STATUS', false);
     if (!empty($pathArray)) {
       $callbackArray = self::getCallbackArray($pathArray, $status);
       if (!empty($callbackArray)) {
