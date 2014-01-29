@@ -404,16 +404,14 @@ class FW {
   // @return `boolean` true if the data was set, false otherwise
   public static function setFlash($key, $data) {
     if (FW::sessionStart()) {
-      if ($started) {
-        if (!isset($_SESSION['FW_FLASH']))
-          $_SESSION['FW_FLASH'] = array();
+      if (!isset($_SESSION['FW_FLASH']))
+        $_SESSION['FW_FLASH'] = array();
 
-        if (!isset($_SESSION['FW_FLASH'][$key]))
-          $_SESSION['FW_FLASH'][$key] = array();
+      if (!isset($_SESSION['FW_FLASH'][$key]))
+        $_SESSION['FW_FLASH'][$key] = array();
 
-        $_SESSION['FW_FLASH'][$key][] = $data;
-        return true;
-      }
+      $_SESSION['FW_FLASH'][$key][] = $data;
+      return true;
     }
 
     return false;
