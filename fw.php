@@ -437,6 +437,29 @@ class FW {
     return array();
   }
 
+  // Check if a flash key exists
+  // @param `mixed $key` any valid value for an array key
+  // @return `boolean` return true if the key exists, false otherwise
+  public static function hasFlash($key) {
+    FW::sessionStart();
+
+    return isset($_SESSION['FW_FLASH']) && isset($_SESSION['FW_FLASH'][$key]);
+  }
+
+  // Set an array of values for a flash key
+  // @param `mixed $key` any valid value for an array key
+  // @param `array $values` an array of values to be added
+  // @return `boolean` true if all data was set, false otherwise
+  public static function setEachFlash($key, $values) {
+    $result = true;
+    foreach ($values as $value) {
+      if (!FW::setFlash($key, $value)) {
+        $result = false;
+      }
+    }
+    return $result;
+  }
+
   // Refresh the client's browser
   // Send a Location header with the url from current request
   // @param `string $anchor` value to append to the refresh URL
