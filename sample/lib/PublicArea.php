@@ -45,8 +45,7 @@ class PublicArea {
     $path = BASE_PATH . '/views/static/' . $page . '.php';
     if (empty($page) || !file_exists($path)) {
       FW::callHttpStatus(404);
-      FW::$stop = true;
-      return;
+      return false;
     }
     echo FW::render('layouts/public', 'static/' . $page);
   }

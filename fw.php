@@ -31,9 +31,8 @@
 // [project-url]: https://github.com/TXGruppi/fw
 class FW {
 
-  const VERSION = '0.6.0';
+  const VERSION = '0.7.0';
 
-  public static $stop = false;
   public static $viewPath;
   protected static $routes = array();
   protected static $baseUrl;
@@ -166,8 +165,8 @@ class FW {
   }
 
   // Call the actions for a HTTP status code
-  // @param `int $status` the status code
-  // @throws `Exception` if where is no action for the specified status code
+  // @param `int $tatus` the status code
+  // @throws `Exception` if no action is found for the status received
   public static function callHttpStatus($status) {
     $pathArray = self::getPathArray('HTTP_STATUS', false);
     if (!empty($pathArray)) {
@@ -176,27 +175,28 @@ class FW {
         return self::runCallbackArray($callbackArray);
       }
     }
-    $statusText = isset(self::$httpStatus[$status]) ? self::$httpStatus[$status] : null;
-    if (!headers_sent())
-      header("HTTP/1.0 $status $statusText");
-    throw new Exception('Error ' . $status . (empty($statusText) ? null : '<br/>' . $statusText));
+    self::failWith($status);
   }
 
-  // Run all callbacks from a array
-  // Stop the callback chain if `self::$stop` is `true`
+  // Run all callbacks in an array
+  // Stop the callback chain if a callback returns `false`
   // Call the method `beforeAction` if it exists
   // @param `array $callbackArray` the callback array
   public static function runCallbackArray($callbackArray) {
     foreach ($callbackArray as $callback) {
-      if (self::$stop)
-        break;
-      if (method_exists($callback['object'], 'beforeAction'))
-        call_user_func(array($callback['object'], 'beforeAction'), self::$matches, $callback);
-      if (self::$stop)
-        break;
-      $callback['method']->invoke($callback['object'], self::$matches, $callback);
-      if (method_exists($callback['object'], 'afterAction'))
-        call_user_func(array($callback['object'], 'afterAction'), self::$matches, $callback);
+      if (method_exists($callback['object'], 'beforeAction')) {
+        if (false === call_user_func(array($callback['object'], 'beforeAction'), self::$matches, $callback)) {
+          return;
+        }
+      }
+      if (false === $callback['method']->invoke($callback['object'], self::$matches, $callback)) {
+        return;
+      }
+      if (method_exists($callback['object'], 'afterAction')) {
+        if (false === call_user_func(array($callback['object'], 'afterAction'), self::$matches, $callback)) {
+          return;
+        }
+      }
     }
   }
 
@@ -480,6 +480,17 @@ class FW {
       return true;
     }
     return false;
+  }
+
+  // Set the status code in the response header and throw an exception
+  // @param `int $tatus` the status code
+  // @throws `Exception` if no action is found for the status received
+  public static function failWith($status) {
+    $statusText = isset(self::$httpStatus[$status]) ? self::$httpStatus[$status] : "Unknown status ($status)";
+    if (!headers_sent()) {
+      header("HTTP/1.0 $status $statusText");
+    }
+    throw new Exception("Error $status $statusText");
   }
 
 }
